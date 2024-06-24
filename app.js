@@ -41,7 +41,7 @@ app.post('/create/website', async function (req, res) {
     try{
         const website = await websiteSchema({
             websiteName: req.body.websiteName,
-            defaultPage: req.body.defaultPage,
+            defaultPageName: req.body.defaultPage,
             owner: req.body.owner,
             visibility: req.body.visibility,
             filePath: `./public/${d.getDate()}-${d.getMonth()}-${d.getFullYear()}-${d.getTime()}-${req.body.websiteName}`
