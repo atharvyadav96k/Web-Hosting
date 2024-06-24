@@ -58,6 +58,5 @@ app.get('/:websitedomain/webhost.web.app', function (req, res) {
         if (err) return res.send("Website not found")
         res.send(data);
     });
-
 });
 app.listen(process.env.PORT);
