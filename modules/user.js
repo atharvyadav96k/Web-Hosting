@@ -25,7 +25,13 @@ const userSchema = mongoose.Schema({
         required: true, // Corrected from 'require' to 'required'
         unique: true,
         match: [/^\d{10}$/] // This line seems fine as it is, ensuring phone numbers are exactly 10 digits long.
-    }
+    },
+    websites: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: '/website'
+        }
+    ]
 })
 
 module.exports = mongoose.model('user', userSchema);

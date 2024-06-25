@@ -14,14 +14,29 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', function (req, res) {
     res.send("Working")
 })
-app.get('/change/domain', function(req, res){
+app.get('/change/domain', function (req, res) {
     res.render('domainchange')
 })
-app.post('/change/domain/',async function(req, res){
+app.post('/delete/website', async function (req, res) {
+    try {
+        const website = await websiteSchema.findOne({ websiteName: req.body.websiteName }); // Using query parameter for simplicity
+        if (!website) {
+            return res.status(404).send({ message: "Website not found" });
+        }
+        const user = await userSchema.findOneAndUpdate({_id: website.owner},
+            {$pull: {websites: website._id}}
+        );
+        res.status(200).send(website);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "An error occurred while processing your request." });
+    }    
+})
+app.post('/change/domain/', async function (req, res) {
     try {
         const updatedWebsite = await websiteSchema.findOneAndUpdate(
             { websiteName: req.body.oldName },
-            { websiteName: req.body.newName } , // Corrected field name
+            { websiteName: req.body.newName }, // Corrected field name
             { new: true, runValidators: true }
         );
 
@@ -67,16 +82,24 @@ app.post('/create/website', filerHandel.upload.single('folder'), async function 
         return res.status(500).send("Server Side error can't store file")
     }
     try {
-        const website = await websiteSchema({
-            websiteName: req.file.filename.split('.')[0],
-            defaultPageName: 'index.html',
-            owner: '6679b23fad15d5ff435f2197',
-            visibility: true,
-            filePath: filePath.split('.')[0],
-            backUpPath: req.file.path
-        })
-        await website.save();
-        res.send(website);
+        const userData = await userSchema.findOne({ userName: req.body.userName });
+        if (userData) {
+            const website = await websiteSchema({
+                websiteName: req.file.filename.split('.')[0],
+                defaultPageName: req.body.defaultPageName,
+                owner: userData._id,
+                visibility: true,
+                filePath: filePath.split('.')[0],
+                backUpPath: req.file.path
+            })
+            userData.websites.push(website._id);
+            await website.save();
+            await userData.save();
+            return res.send(website);
+        } else {
+            return res.send("user  Not found")
+        }
+
     } catch (err) {
         res.send(err)
     }
@@ -85,10 +108,10 @@ app.post('/create/website', filerHandel.upload.single('folder'), async function 
 app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     try {
         const website = await websiteSchema.findOne({ websiteName: req.params.websitedomain });
-        if(!website){
+        if (!website) {
             return res.status(404).render('error')
         }
-        if(website.visibility){
+        if (website.visibility) {
             fs.readFile(`.${website.filePath}/public/${website.defaultPageName}`, (err, data) => {
                 if (err) {
                     console.log(err)
@@ -101,10 +124,10 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
                     res.render("error")
                 }
             })
-        }else{
+        } else {
             res.render('error')
         }
-        
+
     } catch (err) {
         res.status(400).send(err)
     }
