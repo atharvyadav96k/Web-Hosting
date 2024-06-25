@@ -14,9 +14,27 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', function (req, res) {
     res.send("Working")
 })
-app.get('/username/:projectname', function (req, res) {
+app.get('/change/domain', function(req, res){
+    res.render('domainchange')
+})
+app.post('/change/domain/',async function(req, res){
+    try {
+        const updatedWebsite = await websiteSchema.findOneAndUpdate(
+            { websiteName: req.body.oldName },
+            { websiteName: req.body.newName } , // Corrected field name
+            { new: true, runValidators: true }
+        );
 
-});
+        if (!updatedWebsite) {
+            return res.status(404).send("Website not found");
+        }
+
+        res.status(200).send(updatedWebsite);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("An error occurred while updating the website domain.");
+    }
+})
 app.post('/user/create', async function (req, res) {
     let password = '';
     try {
@@ -77,7 +95,7 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
                     return res.send(err)
                 }
                 if (data) {
-                    console.log(data)
+                    // console.log(data)
                     res.end(data)
                 } else {
                     res.render("error")
@@ -106,7 +124,6 @@ app.get('*', async function (req, res) {
                 return res.status(400).send({ success: false, message: "not found" });
             }
             if (data) {
-                console.log(data)
                 res.end(data);
             } else {
                 res.render('error')
