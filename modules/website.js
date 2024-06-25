@@ -30,6 +30,11 @@ const websiteSchema = mongoose.Schema({
         type: String,
         required: true,
         unique: true
+    },
+    backUpPath: {
+        type: String,
+        required: true,
+        unique: true
     }
 })
 
