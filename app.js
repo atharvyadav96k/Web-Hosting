@@ -23,14 +23,14 @@ app.post('/delete/website', async function (req, res) {
         if (!website) {
             return res.status(404).send({ message: "Website not found" });
         }
-        const user = await userSchema.findOneAndUpdate({_id: website.owner},
-            {$pull: {websites: website._id}}
+        const user = await userSchema.findOneAndUpdate({ _id: website.owner },
+            { $pull: { websites: website._id } }
         );
         res.status(200).send(website);
     } catch (err) {
         console.error(err);
         res.status(500).send({ message: "An error occurred while processing your request." });
-    }    
+    }
 })
 app.post('/change/domain/', async function (req, res) {
     try {
@@ -49,6 +49,16 @@ app.post('/change/domain/', async function (req, res) {
         console.error(error);
         res.status(500).send("An error occurred while updating the website domain.");
     }
+})
+app.post('/change/visibility', async function (req, res) {
+    try {
+        const { websiteName, visibility } = req.body;
+        const website = await websiteSchema.findOneAndUpdate({ websiteName: websiteName }, {$set: {visibility: visibility}}, {new: true});
+        res.send(website);
+    }catch(err){
+        res.send(err)
+    }
+    
 })
 app.post('/user/create', async function (req, res) {
     let password = '';
