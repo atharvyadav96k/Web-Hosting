@@ -80,6 +80,9 @@ app.post('/user/create', async function (req, res) {
     }
 
 })
+app.post('/user/login', function(req, res){
+    
+})
 app.get('/create/website', function (req, res) {
     res.render('upload')
 })
@@ -143,6 +146,7 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     }
 
 });
+
 app.get('*', async function (req, res) {
     console.log(`Url: ${req.url}`)
     console.log(req.url.split('/')[1])
