@@ -12,7 +12,7 @@ Platform is build to host static webisites
 * Node , MongoDb must installed in local mechine
 * Run following command's to download required package's
 ```
-  npm i express mongoose adm-zip multer bcrypt dotenv ejs
+  npm i express mongoose adm-zip multer bcrypt dotenv ejs cookie-parser jsonwebtoken
   ```
 * Open cmd in same folder where app.js exists and run following commad
 ```
