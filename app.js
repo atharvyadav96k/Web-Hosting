@@ -2,22 +2,30 @@ const express = require('express')
 const app = express();
 const fs = require('fs');
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
+
 const websiteSchema = require('./modules/website')
 const userSchema = require('./modules/user')
 const filerHandel = require('./modules/saveZipAndExptractZip');
 const genPath = require('./modules/generatePathOfSource')
+const isAuthenticated = require('./middleware/isAuthencated')
 require('dotenv').config();
+
 app.use(express.static('public'))
 app.set("view engine", "ejs");
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
 app.get('/', function (req, res) {
     res.send("Working")
 })
 app.get('/change/domain', function (req, res) {
     res.render('domainchange')
 })
-app.post('/delete/website', async function (req, res) {
+app.post('/delete/website', isAuthenticated,async function (req, res) {
+    
     try {
         const website = await websiteSchema.findOne({ websiteName: req.body.websiteName }); // Using query parameter for simplicity
         if (!website) {
@@ -32,7 +40,7 @@ app.post('/delete/website', async function (req, res) {
         res.status(500).send({ message: "An error occurred while processing your request." });
     }
 })
-app.post('/change/domain/', async function (req, res) {
+app.post('/change/domain/', isAuthenticated,async function (req, res) {
     try {
         const updatedWebsite = await websiteSchema.findOneAndUpdate(
             { websiteName: req.body.oldName },
@@ -50,7 +58,7 @@ app.post('/change/domain/', async function (req, res) {
         res.status(500).send("An error occurred while updating the website domain.");
     }
 })
-app.post('/change/visibility', async function (req, res) {
+app.post('/change/visibility', isAuthenticated,async function (req, res) {
     try {
         const { websiteName, visibility } = req.body;
         const website = await websiteSchema.findOneAndUpdate({ websiteName: websiteName }, {$set: {visibility: visibility}}, {new: true});
@@ -60,33 +68,34 @@ app.post('/change/visibility', async function (req, res) {
     }
     
 })
-app.post('/user/create', async function (req, res) {
-    let password = '';
+app.post('/register', async function (req, res) {
     try {
         const salt = await bcrypt.genSalt(10);
-        password = await bcrypt.hash(req.body.password, salt);
-
-        const user = new userSchema({
-            userName: req.body.userName,
-            password: password,
-            email: req.body.email,
-            phoneNumber: req.body.phoneNumber
+        const hash = await bcrypt.hash(req.body.password, salt);
+        const {userName, password, email, phoneNumber} = req.body;
+        const user = await userSchema.create({
+            userName,
+            password: hash,
+            email,
+            phoneNumber
         });
-
-        await user.save();
-        res.status(201).send(user); // Send the saved user object
+        const token = jwt.sign({userName, password}, process.env.JWT_SECRET);
+        res.cookie("secret", token, {
+            httpOnly: true
+        });
+        res.status(201).send(token); // Send the saved user object
     } catch (err) {
-        res.status(500).send({ message: 'An error occurred during registration' }); // Send a generic error message
+        res.status(500).send({ message: err.message }); // Send a generic error message
     }
-
 })
-app.post('/user/login', function(req, res){
-    
+app.get('/login', function(req, res){
+    res.send("<script>console.log('Cookies' + document.cookie)</script>")
 })
-app.get('/create/website', function (req, res) {
+app.get('/create/website', isAuthenticated,function (req, res) {
+    console.log(req.auth.userName)
     res.render('upload')
 })
-app.post('/create/website', filerHandel.upload.single('folder'), async function (req, res) {
+app.post('/create/website', isAuthenticated,filerHandel.upload.single('folder'), async function (req, res) {
     let filePath = '';
     try {
         filePath = await filerHandel.extractZip(req.file.filename, req.file.path);
@@ -146,7 +155,6 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     }
 
 });
-
 app.get('*', async function (req, res) {
     console.log(`Url: ${req.url}`)
     console.log(req.url.split('/')[1])
