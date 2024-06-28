@@ -24,8 +24,7 @@ app.get('/', function (req, res) {
 app.get('/change/domain', function (req, res) {
     res.render('domainchange')
 })
-app.post('/delete/website', isAuthenticated,async function (req, res) {
-    
+app.post('/delete/website', isAuthenticated, async function (req, res) {
     try {
         const website = await websiteSchema.findOne({ websiteName: req.body.websiteName }); // Using query parameter for simplicity
         if (!website) {
@@ -40,7 +39,7 @@ app.post('/delete/website', isAuthenticated,async function (req, res) {
         res.status(500).send({ message: "An error occurred while processing your request." });
     }
 })
-app.post('/change/domain/', isAuthenticated,async function (req, res) {
+app.post('/change/domain/', isAuthenticated, async function (req, res) {
     try {
         const updatedWebsite = await websiteSchema.findOneAndUpdate(
             { websiteName: req.body.oldName },
@@ -58,44 +57,62 @@ app.post('/change/domain/', isAuthenticated,async function (req, res) {
         res.status(500).send("An error occurred while updating the website domain.");
     }
 })
-app.post('/change/visibility', isAuthenticated,async function (req, res) {
+app.post('/change/visibility', isAuthenticated, async function (req, res) {
     try {
         const { websiteName, visibility } = req.body;
-        const website = await websiteSchema.findOneAndUpdate({ websiteName: websiteName }, {$set: {visibility: visibility}}, {new: true});
+        const website = await websiteSchema.findOneAndUpdate({ websiteName: websiteName }, { $set: { visibility: visibility } }, { new: true });
         res.send(website);
-    }catch(err){
+    } catch (err) {
         res.send(err)
     }
-    
+
 })
 app.post('/register', async function (req, res) {
     try {
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(req.body.password, salt);
-        const {userName, password, email, phoneNumber} = req.body;
+        const { userName, password, email, phoneNumber } = req.body;
         const user = await userSchema.create({
             userName,
             password: hash,
             email,
             phoneNumber
         });
-        const token = jwt.sign({userName, password}, process.env.JWT_SECRET);
+        const token = jwt.sign({ userName, password }, process.env.JWT_SECRET);
         res.cookie("secret", token, {
-            httpOnly: true
+            httpOnly: true,
+            maxAge: 30 * 24 * 60 * 60 * 1000
         });
         res.status(201).send(token); // Send the saved user object
     } catch (err) {
         res.status(500).send({ message: err.message }); // Send a generic error message
     }
 })
-app.get('/login', function(req, res){
-    res.send("<script>console.log('Cookies' + document.cookie)</script>")
+app.post('/login', async function (req, res) {
+    const { userName, password } = req.body;
+    try {
+        const user = await userSchema.findOne({ userName });
+        if (!user) {
+            return res.status(400).send("Enter Valid details");
+        }
+        if (bcrypt.compare(password, user.password)) {
+            const token = jwt.sign({ userName, password }, process.env.JWT_SECRET);
+            res.cookie("secret", token, {
+                httpOnly: true,
+                maxAge: 30 * 24 * 60 * 60 * 1000
+            });
+            res.status(200).send(token);
+        }
+    }catch(err){
+        res.status(500).send(err.message);
+    }
+    
 })
-app.get('/create/website', isAuthenticated,function (req, res) {
+app.get('/create/website', isAuthenticated, function (req, res) {
     console.log(req.auth.userName)
     res.render('upload')
 })
-app.post('/create/website', isAuthenticated,filerHandel.upload.single('folder'), async function (req, res) {
+app.post('/create/website', isAuthenticated, filerHandel.upload.single('folder'), async function (req, res) {
     let filePath = '';
     try {
         filePath = await filerHandel.extractZip(req.file.filename, req.file.path);
@@ -177,5 +194,5 @@ app.get('*', async function (req, res) {
     } catch (err) {
         res.render("error")
     }
-})
+});
 app.listen(process.env.PORT);
