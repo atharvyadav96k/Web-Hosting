@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Upload Folder</title>
+    <style>
+
+    </style>
 </head>
 <body>
     <form action="/create/website" method="post" enctype="multipart/form-data">
-        <input type="file" id="folder" name="folder" accept=".zip">
+        <input type="file" id="folder" name="folder" accept=".zip" class="drag-drop-container">
         <input type="text" name="userName">
         <button type="submit">Upload</button>
     </form>

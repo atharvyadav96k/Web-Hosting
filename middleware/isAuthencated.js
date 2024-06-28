@@ -18,10 +18,10 @@ const isAuthenticated = async function (req, res, next) {
             req.auth.userName = data.userName;
             next();
         } else {
-            res.status(300).send("failed to login")
+            res.redirect('/login')
         }
     }catch(err){
-        res.status(500).send("Server Side error")
+        res.render('badgetway')
     }
 }
 module.exports = isAuthenticated;

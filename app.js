@@ -18,8 +18,64 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get('/', function (req, res) {
+app.get('/', function(req, res){
     res.send("Working")
+})
+// Authentication
+app.get('/register', function(req, res){
+    res.render('register-page')
+})
+app.post('/register', async function (req, res) {
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(req.body.password, salt);
+        const { userName, password, email, phoneNumber } = req.body;
+        const user = await userSchema.create({
+            userName,
+            password: hash,
+            email,
+            phoneNumber
+        });
+        const token = jwt.sign({ userName, password }, process.env.JWT_SECRET);
+        res.cookie("secret", token, {
+            httpOnly: true,
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        });
+        res.redirect('/dashboard')
+    } catch (err) {
+        res.status(500).send({ message: err.message }); // Send a generic error message
+    }
+})
+app.get('/login', function(req, res){
+    res.render('login-page')
+})
+app.post('/login', async function (req, res) {
+    const { userName, password } = req.body;
+    try {
+        const user = await userSchema.findOne({ userName });
+        if (!user) {
+            return res.status(400).send("Enter Valid details");
+        }
+        if (bcrypt.compare(password, user.password)) {
+            const token = jwt.sign({ userName, password }, process.env.JWT_SECRET);
+            res.cookie("secret", token, {
+                httpOnly: true,
+                maxAge: 30 * 24 * 60 * 60 * 1000
+            });
+            res.redirect('/dashboard')
+        }
+    }catch(err){
+        res.status(500).send(err.message);
+    }
+    
+})
+app.get('/logout', function(req, res){
+    res.clearCookie('secret');
+    res.redirect('/dashboard')
+})
+// Website features
+app.get('/dashboard',isAuthenticated, function (req, res) {
+    res.render('dashboard')
 })
 app.get('/change/domain', function (req, res) {
     res.render('domainchange')
@@ -67,50 +123,8 @@ app.post('/change/visibility', isAuthenticated, async function (req, res) {
     }
 
 })
-app.post('/register', async function (req, res) {
-    try {
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(req.body.password, salt);
-        const { userName, password, email, phoneNumber } = req.body;
-        const user = await userSchema.create({
-            userName,
-            password: hash,
-            email,
-            phoneNumber
-        });
-        const token = jwt.sign({ userName, password }, process.env.JWT_SECRET);
-        res.cookie("secret", token, {
-            httpOnly: true,
-            maxAge: 30 * 24 * 60 * 60 * 1000
-        });
-        res.status(201).send(token); // Send the saved user object
-    } catch (err) {
-        res.status(500).send({ message: err.message }); // Send a generic error message
-    }
-})
-app.post('/login', async function (req, res) {
-    const { userName, password } = req.body;
-    try {
-        const user = await userSchema.findOne({ userName });
-        if (!user) {
-            return res.status(400).send("Enter Valid details");
-        }
-        if (bcrypt.compare(password, user.password)) {
-            const token = jwt.sign({ userName, password }, process.env.JWT_SECRET);
-            res.cookie("secret", token, {
-                httpOnly: true,
-                maxAge: 30 * 24 * 60 * 60 * 1000
-            });
-            res.status(200).send(token);
-        }
-    }catch(err){
-        res.status(500).send(err.message);
-    }
-    
-})
 app.get('/create/website', isAuthenticated, function (req, res) {
-    console.log(req.auth.userName)
-    res.render('upload')
+    res.render('add-new-site')
 })
 app.post('/create/website', isAuthenticated, filerHandel.upload.single('folder'), async function (req, res) {
     let filePath = '';
@@ -121,7 +135,7 @@ app.post('/create/website', isAuthenticated, filerHandel.upload.single('folder')
         return res.status(500).send("Server Side error can't store file")
     }
     try {
-        const userData = await userSchema.findOne({ userName: req.body.userName });
+        const userData = await userSchema.findOne({ userName: req.auth.userName });
         if (userData) {
             const website = await websiteSchema({
                 websiteName: req.file.filename.split('.')[0],
@@ -134,7 +148,7 @@ app.post('/create/website', isAuthenticated, filerHandel.upload.single('folder')
             userData.websites.push(website._id);
             await website.save();
             await userData.save();
-            return res.send(website);
+            res.redirect('/sites')
         } else {
             return res.send("user  Not found")
         }
@@ -144,11 +158,12 @@ app.post('/create/website', isAuthenticated, filerHandel.upload.single('folder')
     }
 
 });
+// Visit website
 app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     try {
         const website = await websiteSchema.findOne({ websiteName: req.params.websitedomain });
         if (!website) {
-            return res.status(404).render('error')
+            return res.status(404).render('error-404')
         }
         if (website.visibility) {
             fs.readFile(`.${website.filePath}/public/${website.defaultPageName}`, (err, data) => {
@@ -157,14 +172,13 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
                     return res.send(err)
                 }
                 if (data) {
-                    // console.log(data)
                     res.end(data)
                 } else {
-                    res.render("error")
+                    res.render("error-404")
                 }
             })
         } else {
-            res.render('error')
+            res.render('error-403')
         }
 
     } catch (err) {
@@ -172,6 +186,9 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     }
 
 });
+app.get('/sites', isAuthenticated, function(req, res){
+    res.render('all-sites')
+})
 app.get('*', async function (req, res) {
     console.log(`Url: ${req.url}`)
     console.log(req.url.split('/')[1])
