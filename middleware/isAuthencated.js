@@ -16,6 +16,7 @@ const isAuthenticated = async function (req, res, next) {
         if (bcrypt.compare(data.password, user.password)) {
             req.auth = req.auth || {};
             req.auth.userName = data.userName;
+            req.auth._id = user._id;
             next();
         } else {
             res.redirect('/login')

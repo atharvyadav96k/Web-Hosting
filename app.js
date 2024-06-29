@@ -4,27 +4,40 @@ const fs = require('fs');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
+const path = require('path')
 
 const websiteSchema = require('./modules/website')
 const userSchema = require('./modules/user')
 const filerHandel = require('./modules/saveZipAndExptractZip');
 const genPath = require('./modules/generatePathOfSource')
 const isAuthenticated = require('./middleware/isAuthencated')
+const getFolderNameFromRequest = require('./middleware/getFolderName')
 require('dotenv').config();
 
-app.use(express.static('public'))
 app.set("view engine", "ejs");
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-app.get('/', function(req, res){
+app.use(express.static('public'))
+// here we make specific folder static for every request
+app.use(async (req, res, next) => {
+    let folderName = ''
+    let referer = req.get('referer');
+    if (referer) {
+        const segments = referer.split('/');
+        const lastSegment = segments.pop();
+        const previousSegment = segments.pop();
+        folderName = await getFolderNameFromRequest(previousSegment);
+    }
+    express.static(`./public/websites/${folderName}/public`)(req, res, next);
+});
+app.get('/', function (req, res) {
     res.send("Working")
-})
+});
 // Authentication
-app.get('/register', function(req, res){
+app.get('/register', function (req, res) {
     res.render('register-page')
-})
+});
 app.post('/register', async function (req, res) {
     try {
         const salt = await bcrypt.genSalt(10);
@@ -45,10 +58,10 @@ app.post('/register', async function (req, res) {
     } catch (err) {
         res.status(500).send({ message: err.message }); // Send a generic error message
     }
-})
-app.get('/login', function(req, res){
+});
+app.get('/login', function (req, res) {
     res.render('login-page')
-})
+});
 app.post('/login', async function (req, res) {
     const { userName, password } = req.body;
     try {
@@ -64,22 +77,30 @@ app.post('/login', async function (req, res) {
             });
             res.redirect('/dashboard')
         }
-    }catch(err){
+    } catch (err) {
         res.status(500).send(err.message);
     }
-    
-})
-app.get('/logout', function(req, res){
+
+});
+app.get('/logout', function (req, res) {
     res.clearCookie('secret');
     res.redirect('/dashboard')
-})
+});
 // Website features
-app.get('/dashboard',isAuthenticated, function (req, res) {
-    res.render('dashboard')
-})
+app.get('/dashboard', isAuthenticated,async function (req, res) {
+    try {
+        const docs = await websiteSchema.find({ owner: req.auth._id })
+            .sort({ _id: -1 })
+            .limit(4);
+        res.render('dashboard', {docs})
+    } catch (err) {
+        res.render('error-403')
+    }
+    
+});
 app.get('/change/domain', function (req, res) {
     res.render('domainchange')
-})
+});
 app.post('/delete/website', isAuthenticated, async function (req, res) {
     try {
         const website = await websiteSchema.findOne({ websiteName: req.body.websiteName }); // Using query parameter for simplicity
@@ -94,7 +115,7 @@ app.post('/delete/website', isAuthenticated, async function (req, res) {
         console.error(err);
         res.status(500).send({ message: "An error occurred while processing your request." });
     }
-})
+});
 app.post('/change/domain/', isAuthenticated, async function (req, res) {
     try {
         const updatedWebsite = await websiteSchema.findOneAndUpdate(
@@ -112,7 +133,7 @@ app.post('/change/domain/', isAuthenticated, async function (req, res) {
         console.error(error);
         res.status(500).send("An error occurred while updating the website domain.");
     }
-})
+});
 app.post('/change/visibility', isAuthenticated, async function (req, res) {
     try {
         const { websiteName, visibility } = req.body;
@@ -122,10 +143,10 @@ app.post('/change/visibility', isAuthenticated, async function (req, res) {
         res.send(err)
     }
 
-})
+});
 app.get('/create/website', isAuthenticated, function (req, res) {
     res.render('add-new-site')
-})
+});
 app.post('/create/website', isAuthenticated, filerHandel.upload.single('folder'), async function (req, res) {
     let filePath = '';
     try {
@@ -158,6 +179,25 @@ app.post('/create/website', isAuthenticated, filerHandel.upload.single('folder')
     }
 
 });
+app.get('/resentsites', isAuthenticated, async function (req, res) {
+    try {
+        const docs = await websiteSchema.find({ owner: req.auth._id })
+            .sort({ _id: -1 })
+            .limit(4);
+        res.send(docs)
+    } catch (err) {
+        res.render('error-403')
+    }
+
+})
+app.get('/:website/setting', isAuthenticated,async function(req, res){
+    const website = await websiteSchema.findOne({websiteName: req.params.website});
+    console.log(website)
+    res.render('more-settings', {websiteName: website.websiteName, defaultPageName: website.defaultPageName, visibility: website.visibility});
+})
+app.post('/:website/setting', function(req, res){
+
+})
 // Visit website
 app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     try {
@@ -186,30 +226,12 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     }
 
 });
-app.get('/sites', isAuthenticated, function(req, res){
-    res.render('all-sites')
-})
-app.get('*', async function (req, res) {
-    console.log(`Url: ${req.url}`)
-    console.log(req.url.split('/')[1])
-    try {
-        const website = await websiteSchema.findOne({
-            websiteName: req.url.split('/')[1]
-        })
-        console.log(`FIle path ${website.filePath}/public${genPath(req.url)}`)
-        fs.readFile(`.${website.filePath}/public${genPath(req.url)}`, 'utf-8', (err, data) => {
-            if (err) {
-                console.log(err)
-                return res.status(400).send({ success: false, message: "not found" });
-            }
-            if (data) {
-                res.end(data);
-            } else {
-                res.render('error')
-            }
-        })
-    } catch (err) {
-        res.render("error")
-    }
+app.get('/sites', isAuthenticated, async function (req, res) {
+    console.log(req.auth._id)
+    const websites = await websiteSchema.find({ owner: req.auth._id });
+    res.render('all-sites', { websites, domain: process.env.DOMAIN})
 });
+app.get("*", function (req, res) {
+    res.render('error-404')
+})
 app.listen(process.env.PORT);

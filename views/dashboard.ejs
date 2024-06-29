@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
     <link rel="stylesheet" href="/vendor/owl-carousel/css/owl.carousel.min.css">
     <link rel="stylesheet" href="/vendor/owl-carousel/css/owl.theme.default.min.css">
     <link href="/vendor/jqvmap/css/jqvmap.min.css" rel="stylesheet">
@@ -104,8 +104,8 @@
                 <ul class="metismenu" id="menu">
                     <li class="nav-label first">Main Menu</li>
                     <li style="color: white;" class="bg-secondary">
-                        <a  href="/dashboard" aria-expanded="false" ><i
-                                class="icon icon-single-04"></i><span >Dashboard</span></a>
+                        <a href="/dashboard" aria-expanded="false"><i
+                                class="icon icon-single-04"></i><span>Dashboard</span></a>
                     </li>
                     <li class="nav-label">Apps</li>
                     <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
@@ -132,7 +132,39 @@
 
         </div>
         <div class="content-body">
-
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">recently added   </h4>
+                        </div>
+                        <div class="card-body">
+                            <div  class="vmap">
+                                <% if(docs && docs.length > 0){ %>
+                                    <iframe src="http://localhost:3000/<%= docs[0].websiteName %>/webhost.web.app" style="width: 100%; height: 100%;"></iframe>
+                                <% }else{ %>
+                                    <h1>No result</h1>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">My sites</h4>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush" style="color: black;background-color: white;">
+                                <% docs.forEach((website)=>{ %>
+                                    <li class="list-group-item ml-2 mr-2"><a style="color: #343957;background-color: white;display: block;" href="/<%= website.websiteName %>/setting"><%= website.websiteName %></a></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
 
 
