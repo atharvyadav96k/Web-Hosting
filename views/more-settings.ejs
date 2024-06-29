@@ -132,7 +132,7 @@
 
         </div>
         <div class="content-body">
-            <form class="ml-4 mr-4 " style="color: rgb(51, 51, 51);">
+            <form class="ml-4 mr-4 " style="color: rgb(51, 51, 51);" action="/<%= websiteName %>/setting" method="post">
                 <div class="mb-3">
                     <label for="exampleInputEmail1" class="form-label text-primary"><h3>Domain</h3></label>
                     <p class="text-warning">Before changing the domain of your website, please note that this action will update the URL associated with your site. Ensure all your links and external references are updated accordingly to avoid any broken links or access issues. Changing the domain is a significant action that affects how users access your website via its new URL.</p>
@@ -143,7 +143,7 @@
                 <div class="mb-3">
                     <label for="exampleInputPassword1" class="form-label text-primary"><h3>Default page</h3></label>
                     <p class="text-warning">When changing the default main page of your website, ensure that the new page accurately represents your site's content and purpose. Update any internal links within your website to direct visitors to the new main page. This change can influence how users interact with your site and find relevant information upon their visit.</p>
-                    <input type="text" value="<%= defaultPageName %>" class="form-control" name="defaultPage" style="max-width: 300px;">
+                    <input type="text" value="<%= defaultPageName %>" class="form-control" name="defaultPageName" style="max-width: 300px;">
                 </div>
                 <hr class="border  border-3 opacity-75">
                 <div class="mb-3">

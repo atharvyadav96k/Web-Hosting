@@ -116,34 +116,6 @@ app.post('/delete/website', isAuthenticated, async function (req, res) {
         res.status(500).send({ message: "An error occurred while processing your request." });
     }
 });
-app.post('/change/domain/', isAuthenticated, async function (req, res) {
-    try {
-        const updatedWebsite = await websiteSchema.findOneAndUpdate(
-            { websiteName: req.body.oldName },
-            { websiteName: req.body.newName }, // Corrected field name
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedWebsite) {
-            return res.status(404).send("Website not found");
-        }
-
-        res.status(200).send(updatedWebsite);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("An error occurred while updating the website domain.");
-    }
-});
-app.post('/change/visibility', isAuthenticated, async function (req, res) {
-    try {
-        const { websiteName, visibility } = req.body;
-        const website = await websiteSchema.findOneAndUpdate({ websiteName: websiteName }, { $set: { visibility: visibility } }, { new: true });
-        res.send(website);
-    } catch (err) {
-        res.send(err)
-    }
-
-});
 app.get('/create/website', isAuthenticated, function (req, res) {
     res.render('add-new-site')
 });
@@ -195,8 +167,26 @@ app.get('/:website/setting', isAuthenticated,async function(req, res){
     console.log(website)
     res.render('more-settings', {websiteName: website.websiteName, defaultPageName: website.defaultPageName, visibility: website.visibility});
 })
-app.post('/:website/setting', function(req, res){
+app.post('/:website/setting',async function(req, res){
+    const {domain, defaultPageName, visibility} = req.body;
+    console.log(domain, defaultPageName, visibility);
+    res.status(200);
+    try {
+        const updatedWebsite = await websiteSchema.findOneAndUpdate(
+            { websiteName: req.params.website },
+            { $set: { websiteName: domain, defaultPageName, visibility } },
+            { new: true, runValidators: true }
+        );
+        
 
+        if (!updatedWebsite) {
+            return res.status(404).send("Website not found");
+        }
+        res.redirect(`/${domain}/setting`)
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("An error occurred while updating the website domain.");
+    }
 })
 // Visit website
 app.get('/:websitedomain/webhost.web.app', async function (req, res) {

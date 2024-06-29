@@ -8,7 +8,14 @@ const websiteSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        unique: true
+        unique: true,
+        validate: {
+            validator: function(v) {
+                // Custom validator to allow alphanumeric, '-', and '_'
+                return /^[a-zA-Z0-9\-_]+$/.test(v);
+            },
+            message: props => `${props.value} can only contain alphanumeric characters, '-', and '_'`
+        }
     },
     defaultPageName: {
         type: String,
