@@ -25,7 +25,7 @@ DOMAIN=http://localhost:{port number}
 ```
   npm start
 ```
-* Your server will be start on ``` http://locahost:3000 ```
+* Your server will be start on ``` http://locahost:{port number} ```
 * Paste this link in any browser and you will get access of website 
 ### How to host website
 1. Compress website in single folder ( public ) 
