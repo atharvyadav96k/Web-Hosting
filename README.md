@@ -50,7 +50,7 @@ DOMAIN=http://localhost:{port number}
 ```
 <form action="/register" method="post">
     <input type="text"  name="userName" required>
-    <input type="emial"  name="email" required>
+    <input type="email"  name="email" required>
     <input type="radio"  name="visibility" value="true" checked>
     <input type="radio"  name="visibility" value="false">
     <input type="password"  name="password" required>
@@ -63,7 +63,7 @@ DOMAIN=http://localhost:{port number}
     <button type="submit">Logout</button>
 </form>
 ```
-### change  domain , visivility ,default page name 
+### change  domain , visibility ,default page name 
 ``` Note ```:  This platform sends cookies after login if your not using web browser then you shoud send this cookies with every request with name <i> secret. <i>
    <i> Add Website name dynamically  </i>
 ```
