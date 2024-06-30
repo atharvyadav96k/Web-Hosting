@@ -23,7 +23,7 @@
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.3);
   z-index: 99;
-  display: flex;
+  display: none;
   justify-content: center;
   position: sticky;
   top: 0px;
