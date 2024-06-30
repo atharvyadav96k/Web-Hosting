@@ -58,6 +58,7 @@ DOMAIN=http://localhost:{port number}
 </form>
 ```
 ### Logout
+``` Note ``` : User browser shoud store cookies stored by server 
 ```
 <form action="/logout">
     <button type="submit">Logout</button>
@@ -102,5 +103,20 @@ DOMAIN=http://localhost:{port number}
         <option value="false">Private</option>
     </select>
     <input type="submit" value="Submit">
+</form>
+```
+### Resenlty added website
+* User Must be ``` Logged In ```
+<i>Here it will find all resently added sites using logged user id</i>
+```
+ <form action="/resentsites">
+    <input type="submit" value="Submit">
+</form>
+```
+### User all sites
+* User must be ``` Logged In ```
+```
+<form action="/sites">
+  <input type="submit" value="sites">  
 </form>
 ```
