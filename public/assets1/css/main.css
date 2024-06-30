@@ -67,7 +67,12 @@ body {
   background-color: var(--background-color);
   font-family: var(--default-font);
 }
-
+#filter{
+  display: none;
+  width: 100vw;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+}
 a {
   color: var(--accent-color);
   text-decoration: none;
