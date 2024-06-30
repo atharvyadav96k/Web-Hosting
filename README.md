@@ -31,6 +31,7 @@ Platform is build to host static webisites
 4. If visibilty is private then it is only visible to authenticated user
 ***
 # API For Developers 
+``` Note ```:  This platform sends cookies after login if your not using web browser then you shoud send this cookies with every request with name <i> secret <i>
 ### How to uplode website 
 * User must be ``` Logged In ``` without authencation we can't change anything
 ```
