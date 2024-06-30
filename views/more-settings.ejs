@@ -7,6 +7,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Focus - Bootstrap Admin Dashboard </title>
     <!-- Favicon icon -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
@@ -21,6 +26,35 @@
 </head>
 
 <body>
+    <div id="filter">
+        <div id="modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <script>
+                        function closeModel() {
+                            console.log("Hello")
+                            document.getElementById('filter').style.display = 'none'
+                        }
+                    </script>
+                    <div class="modal-header">
+                        <h5 class="modal-title text-warning">WANNING</h5>
+                        <button type="button" class="btn-close" onclick="closeModel()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-primary">This action will permanently delete this website</p>
+                    </div>
+                    <div class="modal-footer">
+                       
+                        <button type="button" class="btn btn-secondary" onclick="closeModel()" >Close</button>
+                        <form action="/delete/<%= websiteName %>" method="post">
+                            <input type="submit" value="delete" class="btn btn-danger">
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
     <div id="preloader">
         <div class="sk-three-bounce">
             <div class="sk-child sk-bounce1"></div>
@@ -134,41 +168,75 @@
         <div class="content-body">
             <form class="ml-4 mr-4 " style="color: rgb(51, 51, 51);" action="/<%= websiteName %>/setting" method="post">
                 <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label text-primary"><h3>Domain</h3></label>
-                    <p class="text-warning">Before changing the domain of your website, please note that this action will update the URL associated with your site. Ensure all your links and external references are updated accordingly to avoid any broken links or access issues. Changing the domain is a significant action that affects how users access your website via its new URL.</p>
-                    <input type="text" value="<%= websiteName %>" class="form-control" name="domain"  style="max-width: 300px;">
+                    <label for="exampleInputEmail1" class="form-label text-primary">
+                        <h3>Domain</h3>
+                    </label>
+                    <p class="text-warning">Before changing the domain of your website, please note that this action
+                        will update the URL associated with your site. Ensure all your links and external references are
+                        updated accordingly to avoid any broken links or access issues. Changing the domain is a
+                        significant action that affects how users access your website via its new URL.</p>
+                    <input type="text" value="<%= websiteName %>" class="form-control" name="domain"
+                        style="max-width: 300px;">
                 </div>
                 <hr class="border  border-3 opacity-75">
 
                 <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label text-primary"><h3>Default page</h3></label>
-                    <p class="text-warning">When changing the default main page of your website, ensure that the new page accurately represents your site's content and purpose. Update any internal links within your website to direct visitors to the new main page. This change can influence how users interact with your site and find relevant information upon their visit.</p>
-                    <input type="text" value="<%= defaultPageName %>" class="form-control" name="defaultPageName" style="max-width: 300px;">
+                    <label for="exampleInputPassword1" class="form-label text-primary">
+                        <h3>Default page</h3>
+                    </label>
+                    <p class="text-warning">When changing the default main page of your website, ensure that the new
+                        page accurately represents your site's content and purpose. Update any internal links within
+                        your website to direct visitors to the new main page. This change can influence how users
+                        interact with your site and find relevant information upon their visit.</p>
+                    <input type="text" value="<%= defaultPageName %>" class="form-control" name="defaultPageName"
+                        style="max-width: 300px;">
                 </div>
                 <hr class="border  border-3 opacity-75">
                 <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label text-primary"><h3>Website Visibility</h3></label>
-                    <p class="text-warning">When you make your website public, it becomes accessible to anyone on the internet. This setting is suitable for websites intended for general visibility and accessibility.<br>Conversely, making your website private restricts access to only authorized users or those with specific credentials. This setting is useful for websites that contain confidential information or are intended for a limited audience.<br>Ensure to choose the appropriate setting based on your website's purpose and the level of access you want to grant to visitors.</p>
+                    <label for="exampleInputPassword1" class="form-label text-primary">
+                        <h3>Website Visibility</h3>
+                    </label>
+                    <p class="text-warning">When you make your website public, it becomes accessible to anyone on the
+                        internet. This setting is suitable for websites intended for general visibility and
+                        accessibility.<br>Conversely, making your website private restricts access to only authorized
+                        users or those with specific credentials. This setting is useful for websites that contain
+                        confidential information or are intended for a limited audience.<br>Ensure to choose the
+                        appropriate setting based on your website's purpose and the level of access you want to grant to
+                        visitors.</p>
                     <div class="form-check">
-                        <input class="form-check-input" name="visibility" type="radio" value="true" <% if (visibility) { %> checked <% } %>>
-                        <label class="form-check-label" for="flexCheckDefault">
-                            Public
-                        </label>
+                        <input class="form-check-input" name="visibility" type="radio" value="true" <% if (visibility) {
+                            %> checked <% } %>>
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Public
+                            </label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" name="visibility" type="radio" value="false" <% if (!visibility) { %> checked <% } %>>
-                        <label class="form-check-label text-danger bold" for="flexCheckChecked">
-                            Private
-                        </label>
+                        <input class="form-check-input" name="visibility" type="radio" value="false" <% if (!visibility)
+                            { %> checked <% } %>>
+                            <label class="form-check-label text-danger bold" for="flexCheckChecked">
+                                Private
+                            </label>
                     </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary pl-4 pr-4 mb-3">Make Changes</button>
+                <hr class="border  border-1 opacity-100">
+                <p class="text-warning">This action will <span class="text-danger">permanently delete</span> this site,
+                    you cant recover this site</p>
+                <script>
+                    function showModel() {
+                        console.log("Hello")
+                        document.getElementById('filter').style.display = 'block'
+                    }
+                </script>
+                <button type="button" class="btn btn-danger" onclick="showModel()">delete website</button>
             </form>
+
         </div>
 
 
     </div>
+
     <!-- Required vendors -->
     <script src="/vendor/global/global.min.js"></script>
     <script src="/js/quixnav-init.js"></script>
@@ -178,7 +246,6 @@
     <!-- Vectormap -->
     <script src="/vendor/raphael/raphael.min.js"></script>
     <script src="/vendor/morris/morris.min.js"></script>
-
 
     <script src="/vendor/circle-progress/circle-progress.min.js"></script>
     <script src="/vendor/chart.js/Chart.bundle.min.js"></script>
