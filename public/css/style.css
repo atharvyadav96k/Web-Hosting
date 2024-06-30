@@ -17,6 +17,17 @@
 .link{
   color: blue;
 }
+#filter{
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 99;
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  top: 0px;
+}
 .noto-sans {
   font-family: "Noto Sans JP", sans-serif;
   font-weight: bolder;
