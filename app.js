@@ -32,7 +32,7 @@ app.use(async (req, res, next) => {
     express.static(`./public/websites/${folderName}/public`)(req, res, next);
 });
 app.get('/', function (req, res) {
-    res.send("Working")
+    res.render('index')
 });
 // Authentication
 app.get('/register', function (req, res) {
@@ -101,16 +101,17 @@ app.get('/dashboard', isAuthenticated,async function (req, res) {
 app.get('/change/domain', function (req, res) {
     res.render('domainchange')
 });
-app.post('/delete/website', isAuthenticated, async function (req, res) {
+app.post('/delete/:website', isAuthenticated, async function (req, res) {
+    console.log("Hello mother father")
     try {
-        const website = await websiteSchema.findOne({ websiteName: req.body.websiteName }); // Using query parameter for simplicity
+        const website = await websiteSchema.findOneAndDelete({ websiteName: req.params.website }); // Using query parameter for simplicity
         if (!website) {
-            return res.status(404).send({ message: "Website not found" });
+            return res.status(404).render('error-404')
         }
         const user = await userSchema.findOneAndUpdate({ _id: website.owner },
             { $pull: { websites: website._id } }
         );
-        res.status(200).send(website);
+        res.status(200).redirect('/sites')
     } catch (err) {
         console.error(err);
         res.status(500).send({ message: "An error occurred while processing your request." });
@@ -163,9 +164,14 @@ app.get('/resentsites', isAuthenticated, async function (req, res) {
 
 })
 app.get('/:website/setting', isAuthenticated,async function(req, res){
-    const website = await websiteSchema.findOne({websiteName: req.params.website});
+    try{
+        const website = await websiteSchema.findOne({websiteName: req.params.website});
     console.log(website)
     res.render('more-settings', {websiteName: website.websiteName, defaultPageName: website.defaultPageName, visibility: website.visibility});
+    }catch(err){
+        res.render('error-404')
+    }
+    
 })
 app.post('/:website/setting',async function(req, res){
     const {domain, defaultPageName, visibility} = req.body;
@@ -177,8 +183,6 @@ app.post('/:website/setting',async function(req, res){
             { $set: { websiteName: domain, defaultPageName, visibility } },
             { new: true, runValidators: true }
         );
-        
-
         if (!updatedWebsite) {
             return res.status(404).send("Website not found");
         }
@@ -214,7 +218,6 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
     } catch (err) {
         res.status(400).send(err)
     }
-
 });
 app.get('/sites', isAuthenticated, async function (req, res) {
     console.log(req.auth._id)
