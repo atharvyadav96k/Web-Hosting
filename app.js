@@ -87,20 +87,31 @@ app.get('/logout', function (req, res) {
     res.redirect('/dashboard')
 });
 // Website features
-app.get('/dashboard', isAuthenticated,async function (req, res) {
+app.get('/dashboard', isAuthenticated, async function (req, res) {
     try {
         const docs = await websiteSchema.find({ owner: req.auth._id })
             .sort({ _id: -1 })
             .limit(4);
-        res.render('dashboard', {docs, port: process.env.PORT})
+        res.render('dashboard', { docs, port: process.env.PORT })
     } catch (err) {
         res.render('error-403')
     }
-    
+
 });
 app.get('/change/domain', function (req, res) {
     res.render('domainchange')
 });
+app.post('/change/domain', isAuthenticated, async function (req, res) {
+    const { oldName, newName } = req.body;
+    try {
+        const website = await websiteSchema.findOneAndUpdate(
+            { websiteName: oldName },
+            { $set: { websiteName: newName } });
+        res.redirect('/sites');
+    } catch (err) {
+        res.render('/error-403')
+    }
+})
 app.post('/delete/:website', isAuthenticated, async function (req, res) {
     console.log("Hello mother father")
     try {
@@ -163,18 +174,18 @@ app.get('/resentsites', isAuthenticated, async function (req, res) {
     }
 
 })
-app.get('/:website/setting', isAuthenticated,async function(req, res){
-    try{
-        const website = await websiteSchema.findOne({websiteName: req.params.website});
-    console.log(website)
-    res.render('more-settings', {websiteName: website.websiteName, defaultPageName: website.defaultPageName, visibility: website.visibility});
-    }catch(err){
+app.get('/:website/setting', isAuthenticated, async function (req, res) {
+    try {
+        const website = await websiteSchema.findOne({ websiteName: req.params.website });
+        console.log(website)
+        res.render('more-settings', { websiteName: website.websiteName, defaultPageName: website.defaultPageName, visibility: website.visibility });
+    } catch (err) {
         res.render('error-404')
     }
-    
+
 })
-app.post('/:website/setting',async function(req, res){
-    const {domain, defaultPageName, visibility} = req.body;
+app.post('/:website/setting', async function (req, res) {
+    const { domain, defaultPageName, visibility } = req.body;
     console.log(domain, defaultPageName, visibility);
     res.status(200);
     try {
@@ -221,8 +232,13 @@ app.get('/:websitedomain/webhost.web.app', async function (req, res) {
 });
 app.get('/sites', isAuthenticated, async function (req, res) {
     console.log(req.auth._id)
-    const websites = await websiteSchema.find({ owner: req.auth._id });
-    res.render('all-sites', { websites, domain: process.env.DOMAIN})
+    try {
+        const websites = await websiteSchema.find({ owner: req.auth._id });
+        res.render('all-sites', { websites, domain: process.env.DOMAIN })
+    }
+    catch(err){
+        res.render("error-403")
+    }
 });
 app.get("*", function (req, res) {
     res.render('error-404')
