@@ -14,6 +14,13 @@ Platform is build to host static webisites
 ```
   npm i express mongoose adm-zip multer bcrypt dotenv ejs cookie-parser jsonwebtoken
   ```
+* Add ``` .env ``` file in project and add following code
+```
+PORT={port numner}
+MONGOOSE_URL={mongoose url}
+JWT_SECRET={your secret}
+DOMAIN=http://localhost:{port number}
+```
 * Open cmd in same folder where app.js exists and run following commad
 ```
   npm start
