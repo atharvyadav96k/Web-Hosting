@@ -38,6 +38,42 @@ DOMAIN=http://localhost:{port number}
 4. If visibilty is private then it is only visible to authenticated user
 ***
 # API For Developers 
+### Login 
+```
+<form action="/login" method="post">
+    <input type="text"  name="userName" required>
+    <input type="password"  name="password" required>
+    <button type="submit">Upload</button>
+</form>
+```
+### Register 
+```
+<form action="/register" method="post">
+    <input type="text"  name="userName" required>
+    <input type="emial"  name="email" required>
+    <input type="radio"  name="visibility" value="true" checked>
+    <input type="radio"  name="visibility" value="false">
+    <input type="password"  name="password" required>
+    <button type="submit">Upload</button>
+</form>
+```
+### Logout
+```
+<form action="/logout">
+    <button type="submit">Logout</button>
+</form>
+```
+### change  domain , visivility ,default page name 
+``` Note ```:  This platform sends cookies after login if your not using web browser then you shoud send this cookies with every request with name <i> secret. <i>
+   <i> Add Website name dynamically  </i>
+```
+<form action="/:website/setting" method="post">
+    <input type="text"  name="domain" required>
+    <input type="text"  name="defaultPageName" required>
+    <input type="text"  name="visibility" required>
+    <button type="submit">Upload</button>
+</form>
+```
 ``` Note ```:  This platform sends cookies after login if your not using web browser then you shoud send this cookies with every request with name <i> secret <i>
 ### How to uplode website 
 * User must be ``` Logged In ``` without authencation we can't change anything
