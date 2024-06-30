@@ -30,7 +30,7 @@ DOMAIN=http://localhost:{port number}
 ### How to host website
 1. Compress website in single folder ( public ) 
 2. uploade thie folder, you will get the website link to access site online 
-3. ex. localhost:3000/```demo-example```/webhost.web.app
+3. ex. localhost:{ port number }/```demo-example```/webhost.web.app
 ### How to change doamin
 1. Go to website setting's
 2. Set Visibility of website
