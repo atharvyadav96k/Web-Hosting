@@ -92,7 +92,7 @@ app.get('/dashboard', isAuthenticated,async function (req, res) {
         const docs = await websiteSchema.find({ owner: req.auth._id })
             .sort({ _id: -1 })
             .limit(4);
-        res.render('dashboard', {docs})
+        res.render('dashboard', {docs, port: process.env.PORT})
     } catch (err) {
         res.render('error-403')
     }
